@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { useUser } from '../../context/UserContext';
+import { useUser } from '../../Context/UserContext';
 
 const Quiz = () => {
   const { quizId } = useParams();
