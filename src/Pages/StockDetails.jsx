@@ -9,7 +9,7 @@ import { toast, Toaster } from "react-hot-toast";
 import CommentSection from "../Components/CommentSection";
 import { useUser } from "../../Context/UserContext";
 
-const API_URL = "http://localhost:3000";
+const API_URL = "https://backendcrypto.onrender.com";
 
 const StockDetails = () => {
   const { email, walletBalance, setWalletBalance, uid } = useUser();

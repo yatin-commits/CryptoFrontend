@@ -1,12 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FcGoogle } from "react-icons/fc";
 import { auth, googleProvider } from "../auth/firebase";
-import { signInWithPopup } from "firebase/auth";
+import { signInWithRedirect, getRedirectResult } from "firebase/auth";
 import Sidebar from "../Components/Sidebar";
 import { useUser } from "../../Context/UserContext";
 import axios from "axios";
-import Cookies from "js-cookie"; // Import js-cookie for cookie management
+import Cookies from "js-cookie";
 
 const API_BASE_URL = "https://backendcrypto.onrender.com";
 
@@ -30,28 +30,63 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
-  // Google Sign-In handler
+  // Handle redirect result after Google Sign-In
+  useEffect(() => {
+    const handleRedirectResult = async () => {
+      try {
+        const result = await getRedirectResult(auth);
+        if (result) {
+          const user = result.user;
+          console.log("Google Sign-In Success:", user);
+
+          setUid(user.uid);
+          setEmail(user.email);
+          setName(user.displayName);
+
+          console.log("Sending request to backend:", {
+            user_id: user.uid,
+            username: user.displayName,
+            email: user.email,
+          });
+          const response = await axios.post(`${API_BASE_URL}/api/user/google-login`, {
+            user_id: user.uid,
+            username: user.displayName,
+            email: user.email,
+          });
+          console.log("Backend Response:", response.data);
+
+          Cookies.set("token", JSON.stringify(response.data.token), { expires: 7 });
+          navigate("/");
+        }
+      } catch (error) {
+        console.error("Google Sign-In Error:", {
+          message: error.message,
+          code: error.code,
+          details: error,
+        });
+        setMessage(`Google Sign-In Failed: ${error.message}`);
+      } finally {
+        setLoading(false);
+      }
+    };
+    handleRedirectResult();
+  }, [navigate, setEmail, setName, setUid]);
+
+  // Google Sign-In handler using redirect
   const handleGoogleSignIn = async () => {
+    if (loading) return;
+    setLoading(true);
     try {
-      const result = await signInWithPopup(auth, googleProvider);
-      const user = result.user;
-
-      setUid(user.uid);
-      setEmail(user.email);
-      setName(user.displayName);
-
-      const response = await axios.post(`${API_BASE_URL}/api/user/google-login`, {
-        user_id: user.uid,
-        username: user.displayName,
-        email: user.email,
-      });
-
-      // Store token in cookie (expires in 7 days)
-      Cookies.set("token", JSON.stringify(response.data.token), { expires: 7 });
-      navigate("/");
+      console.log("Initiating Google Sign-In with Redirect");
+      await signInWithRedirect(auth, googleProvider);
     } catch (error) {
-      console.error("Google Sign-In Error:", error);
-      setMessage("Google Sign-In Failed!");
+      console.error("Google Sign-In Error:", {
+        message: error.message,
+        code: error.code,
+        details: error,
+      });
+      setMessage(`Google Sign-In Failed: ${error.message}`);
+      setLoading(false);
     }
   };
 
@@ -81,7 +116,6 @@ const Login = () => {
         setUid(data.user_id);
         setName(data.username);
 
-        // Store token, user_id, and username in cookies (expire in 7 days)
         Cookies.set("token", JSON.stringify(data.token), { expires: 7 });
         Cookies.set("user_id", JSON.stringify(data.user_id), { expires: 7 });
         Cookies.set("username", JSON.stringify(data.username), { expires: 7 });
@@ -97,7 +131,7 @@ const Login = () => {
         response: error.response ? error.response.data : null,
         status: error.response ? error.response.status : null,
       });
-    
+
       if (error.response) {
         setMessage(error.response.data.message || "Invalid email or password.");
       } else if (error.request) {
@@ -163,9 +197,10 @@ const Login = () => {
             <button
               onClick={handleGoogleSignIn}
               className="w-full flex items-center justify-center gap-2 bg-white text-gray-700 font-semibold py-3 rounded-lg shadow-md hover:bg-gray-100 transition"
+              disabled={loading}
             >
               <FcGoogle size={24} />
-              <span>Sign in with Google</span>
+              <span>{loading ? "Processing..." : "Sign in with Google"}</span>
             </button>
           </div>
 
