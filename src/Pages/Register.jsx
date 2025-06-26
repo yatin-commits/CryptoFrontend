@@ -5,7 +5,7 @@ import axios from "axios";
 import { v4 as uuidv4 } from "uuid"; // Unique ID generate karne ke liye
 import { useUser } from "../../Context/UserContext"; // Global user context use karne ke liye
 
-const API_BASE_URL = "https://backendcrypto.onrender.com/"; // Backend API ka base URL
+const API_BASE_URL = "https://backendcrypto.onrender.com"; // Backend API ka base URL
 
 const Register = () => {
   // Global context se values aur functions le rahe hain
