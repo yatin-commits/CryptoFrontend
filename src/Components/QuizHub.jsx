@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { useUser } from '../../context/UserContext';
+import { useUser } from '../../Context/UserContext';
 
 const QuizHub = () => {
   const { uid, name, walletBalance, setWalletBalance } = useUser();
