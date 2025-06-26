@@ -1,0 +1,11 @@
+/* Add border to the active tab header */
+.p-tabview-nav li.p-highlight {
+    border-bottom: 2px solid #007bff; /* Adjust color as needed */
+  }
+  
+  /* Optional: Add spacing and visual adjustments */
+  .p-tabview-nav li {
+    padding: 0.5rem 1rem;
+    transition: border-color 0.3s ease;
+  }
+  
